@@ -41,7 +41,7 @@ namespace DeleteFromFolder
         {
             InitializeComponent();
 
-            _Stores = stores;
+            this._Stores = stores;
                         
             this.Load += new EventHandler(UCOptions_Load);            
         }
@@ -99,7 +99,7 @@ namespace DeleteFromFolder
         void LoadOptions()
         {
             //fill checkedlistbox with folders
-            foreach (Outlook.Store s in _Stores)
+            foreach (Outlook.Store s in this._Stores)
             {
                 Outlook.MAPIFolder mapi = s.GetRootFolder();
 
