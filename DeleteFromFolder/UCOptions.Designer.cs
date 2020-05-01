@@ -37,19 +37,22 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.clbFolders.FormattingEnabled = true;
-            this.clbFolders.Location = new System.Drawing.Point(4, 4);
+            this.clbFolders.Location = new System.Drawing.Point(8, 8);
+            this.clbFolders.Margin = new System.Windows.Forms.Padding(6);
             this.clbFolders.Name = "clbFolders";
-            this.clbFolders.Size = new System.Drawing.Size(288, 154);
+            this.clbFolders.Size = new System.Drawing.Size(572, 340);
             this.clbFolders.TabIndex = 0;
             this.clbFolders.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clbFolders_ItemCheck);
             // 
             // UCOptions
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.clbFolders);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "UCOptions";
-            this.Size = new System.Drawing.Size(295, 175);
+            this.Size = new System.Drawing.Size(590, 363);
+            this.Load += new System.EventHandler(this.UCOptions_Load);
             this.ResumeLayout(false);
 
         }

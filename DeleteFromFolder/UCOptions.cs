@@ -8,45 +8,30 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using Outlook = Microsoft.Office.Interop.Outlook;
+using Microsoft.Office.Interop.Outlook;
 
 namespace DeleteFromFolder
 {
     [ComVisible(true)]
-    public partial class UCOptions : UserControl, Outlook.PropertyPage
+    public partial class UCOptions : UserControl, PropertyPage
     {
-        #region Public Members
-
         [DispId(-518)]
-        public string Caption
-        {
-            get
-            {
-                return "Delete From Folder";
-            }
-        }
-
-        #endregion
-
-        #region Private Members
-
-        Outlook.PropertyPageSite _PropertyPageSite = null;
-        bool _bDirty = false;
-        Outlook.Stores _Stores;
-        bool _bFlag = false;
-
-        #endregion
-
-        public UCOptions(Outlook.Stores stores)
+        public string Caption => "Delete From Folder";
+                
+        private PropertyPageSite _PropertyPageSite { get; set; }
+        private Stores _Stores { get; set; }
+        private bool _bDirty { get; set; }
+        
+        public UCOptions(Stores stores)
         {
             InitializeComponent();
 
             this._Stores = stores;
-                        
-            this.Load += new EventHandler(UCOptions_Load);            
+            this._PropertyPageSite = null;
+            this._bDirty = false;
         }
 
-        #region Public Methods
+        #region PropertyPage Methods
 
         public void Apply()
         {
@@ -56,10 +41,7 @@ namespace DeleteFromFolder
                 OnDirty(false);
             }
         }
-        public bool Dirty
-        {
-            get { return _bDirty; }
-        }
+        public bool Dirty => _bDirty;
         public void GetPageInfo(ref string HelpFile, ref int HelpContext)
         {
             MessageBox.Show("No Help available", "Warning", MessageBoxButtons.OK);
@@ -67,15 +49,7 @@ namespace DeleteFromFolder
 
         #endregion
 
-        #region Private Methods
-
-        void UCOptions_Load(object sender, EventArgs ar)
-        {
-            LoadOptions();
-
-            _PropertyPageSite = GetPropertyPageSite();
-        }
-        Outlook.PropertyPageSite GetPropertyPageSite()
+        private PropertyPageSite GetPropertyPageSite()
         {
             Type type = typeof(object);
             string assembly = type.Assembly.CodeBase.Replace("mscorlib.dll", "System.Windows.Forms.dll");
@@ -88,63 +62,49 @@ namespace DeleteFromFolder
             System.Reflection.MethodInfo methodInfo = oleObj.GetMethod("GetClientSite");
             object propertyPageSite = methodInfo.Invoke(this, null);
 
-            return (Outlook.PropertyPageSite)propertyPageSite;
+            return (PropertyPageSite)propertyPageSite;
         }
-        void OnDirty(bool isDirty)
+        private void OnDirty(bool isDirty)
         {
             _bDirty = isDirty;
 
-            _PropertyPageSite.OnStatusChange();
+            if(_PropertyPageSite != null)
+                _PropertyPageSite.OnStatusChange();
         }
-        void LoadOptions()
+        private void LoadOptions()
         {
             //fill checkedlistbox with folders
-            foreach (Outlook.Store s in this._Stores)
+            foreach (Store s in this._Stores)
             {
-                Outlook.MAPIFolder mapi = s.GetRootFolder();
+                MAPIFolder mapi = s.GetRootFolder();
 
-                foreach (Outlook.Folder f in mapi.Folders)
-                {
-                    clbFolders.Items.Add(f.Name);
-                }
+                foreach (Folder f in mapi.Folders)
+                    clbFolders.Items.Add(f.Name, Properties.Settings.Default.CheckedItems.Contains(f.Name));
             }
-
-            //set the ones that are checked
-            foreach (string s in DeleteFromFolder.Properties.Settings.Default.CheckedItems.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                int index = clbFolders.FindString(s);
-
-                if (index >= 0)
-                    clbFolders.SetItemChecked(index, true);
-            }
-
-            _bFlag = true; //this is set to false initially so that ItemCheck event doesnt run while we are populating list with saved data
         }
-        void SaveOptions()
+        private void SaveOptions()
         {
             try
             {
-                string idx = string.Empty;
-                foreach (string s in (from object l in clbFolders.CheckedItems select l.ToString()).ToArray())
-                {
-                    idx += (string.IsNullOrEmpty(idx) ? string.Empty : ",") + s;
-                }
+                foreach (string checkedName in clbFolders.CheckedItems)
+                    Properties.Settings.Default.CheckedItems.Add(checkedName);
 
-                DeleteFromFolder.Properties.Settings.Default.CheckedItems = idx;
-                DeleteFromFolder.Properties.Settings.Default.Save();
+                Properties.Settings.Default.Save();
             }
-            catch(Exception)
+            catch(System.Exception)
             {
                 throw;
             }
         }
+        private void UCOptions_Load(object sender, EventArgs ar)
+        {
+            LoadOptions();
 
-        #endregion
-
+            this._PropertyPageSite = GetPropertyPageSite();
+        }
         private void clbFolders_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if(_bFlag)
-                OnDirty(true);
+            OnDirty(true);
         }
     }
 }

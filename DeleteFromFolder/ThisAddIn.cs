@@ -15,7 +15,7 @@ namespace DeleteFromFolder
             ((Outlook.ApplicationEvents_11_Event)Application).Quit += new Outlook.ApplicationEvents_11_QuitEventHandler(ThisAddIn_Quit);
             ((Outlook.ApplicationEvents_11_Event)Application).OptionsPagesAdd += new Outlook.ApplicationEvents_11_OptionsPagesAddEventHandler(ThisAddIn_OptionPagesAdd);
 
-            DeleteFromFolder.Properties.Settings.Default.Upgrade(); //this could solve the addin from forgetting its saved state
+            Properties.Settings.Default.Upgrade(); //this could solve the addin from forgetting its saved state
         }
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
@@ -33,14 +33,10 @@ namespace DeleteFromFolder
 
                 foreach (Outlook.Folder f in mapi.Folders)
                 {
-                    //get saved list of folders to empty on application exit
-                    string[] checkedList = DeleteFromFolder.Properties.Settings.Default.CheckedItems.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (checkedList.Any(item => item.Contains(f.Name)))
+                    //if folder is in checked list then delete its contents when outlook closes
+                    if (Properties.Settings.Default.CheckedItems.Contains(f.Name))
                     {
-                        int iCount = f.Items.Count;
-
-                        for (int i = iCount; i > 0; i--)
+                        for (int i = f.Items.Count; i > 0; i--)
                             f.Items.Remove(i);
                     }
                 }
